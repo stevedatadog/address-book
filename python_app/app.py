@@ -1,14 +1,21 @@
 from flask import Flask, render_template_string
 import psycopg2
+import os
 
 app = Flask(__name__)
 
+# Get environment variables
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_NAME = os.getenv('POSTGRES_DB')
+DB_USER = os.getenv('POSTGRES_USER')
+DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+
 def get_db_connection():
     conn = psycopg2.connect(
-        host="postgres",
-        database="addressbook",
-        user="user",
-        password="password"
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
     )
     return conn
 
@@ -20,8 +27,6 @@ def index():
     addresses = cur.fetchall()
     cur.close()
     conn.close()
-
-    print(addresses[1])
 
     html = '''
     <!DOCTYPE html>
