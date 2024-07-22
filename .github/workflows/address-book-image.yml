@@ -43,6 +43,10 @@ jobs:
         context: ./app
         file: ./app/Dockerfile
         push: true
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/address-book
+          org.opencontainers.image.description="Simple Flask address book app"
+          org.opencontainers.image.licenses=MIT
         tags: |
           ghcr.io/${{ github.repository_owner }}/address-book:latest
           ghcr.io/${{ github.repository_owner }}/address-book:${{ env.ref_name }}
