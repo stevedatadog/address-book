@@ -10,6 +10,8 @@ using Docker Compose or Kubernetes.
 A Python Flask app with one endpoint that queries a PostgreSQL table and renders
 a table of contacts. It uses the `psycopg2` library to connect to the database.
 
+You can use
+
 ### postgres
 
 A PostgreSQL database with a table called `addresses` that has a couple
@@ -28,8 +30,18 @@ For Kubernetes, you can create ConfigMaps and Secrets from `nginx/nginx.conf`
 and `.env`. In the `deploy/kubernetes` directory:
 
 ```bash
+# app config
 kubectl create configmap app-config --from-env-file=../../.env
+kubectl get configmap app-config -o yaml > app-config.yaml
 ```
+
+## Building
+
+This repository includes a workflow to build the Python service image
+`ghcr.io/address-book`. Pushes to main will build a new image and store it in
+your GitHub Container Registry as
+`ghcr.io/[github-account]/address-book:latest`. You can also run the workflow
+manually to build an image from a branch or tag.
 
 ## Running
 
@@ -38,7 +50,13 @@ kubectl create configmap app-config --from-env-file=../../.env
 In the deploy/docker directory:
 
 ```bash
-docker-compose --env-file ../../env up --build
+docker-compose --env-file ../../.env up --build
+```
+
+If you want to enable debug mode for the Flask app, set the `FLASK_DEBUG`:
+
+```bash
+docker-compose --env-file ../../.env -e FLASK_DEBUG=1 up --build
 ```
 
 ### Kubernetes
