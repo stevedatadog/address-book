@@ -6,7 +6,12 @@ on:
       - main
     tags:
       - '*'
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to build from'
+        required: true
+        default: 'main'
 
 jobs:
   build:
@@ -14,38 +19,42 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.ref || github.ref }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v2
 
     - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}  # Or use GHCR_PAT if using a PAT
 
     - name: Extract branch or tag name
       id: extract_ref
       run: |
         if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
-          echo "##[set-output name=ref_name;]${GITHUB_REF#refs/heads/}"
+          echo "ref_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-          echo "##[set-output name=ref_name;]${GITHUB_REF#refs/tags/}"
+          echo "ref_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        elif [[ "${{ github.event.inputs.ref }}" != "" ]]; then
+          echo "ref_name=${{ github.event.inputs.ref }}" >> $GITHUB_ENV
         else
-          echo "##[set-output name=ref_name;]unknown"
+          echo "ref_name=unknown" >> $GITHUB_ENV
         fi
 
     - name: Build and Push Docker Image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v4
       with:
         context: ./app
         file: ./app/Dockerfile
         push: true
         tags: |
           ghcr.io/${{ github.repository_owner }}/address-book:latest
-          ghcr.io/${{ github.repository_owner }}/address-book:${{ steps.extract_ref.outputs.ref_name }}
+          ghcr.io/${{ github.repository_owner }}/address-book:${{ env.ref_name }}
 
     - name: Logout from GitHub Container Registry
       run: docker logout ghcr.io
