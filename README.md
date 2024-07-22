@@ -43,6 +43,16 @@ your GitHub Container Registry as
 `ghcr.io/[github-account]/address-book:latest`. You can also run the workflow
 manually to build an image from a branch or tag.
 
+For this to work, make sure that your Actions settings allow read and write permissions for `GITHUB_TOKEN`: 
+
+1. In your repository, go to the **Settings** tab
+2. Click on **Actions > General**
+3. Under **Workflow permissions**, select **Read and write permissions**:
+
+   ![Enable read and write permissions](./readme-images/enable-action-write.png)
+
+4. Click **Save**
+
 ## Running
 
 ### Docker Compose
