@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+#          image: registry.default.svc.cluster.local:5000/addressbook:latest # fqdn of local registry
+          image: addressbook:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_ENV
+              value: development
+            - name: FLASK_DEBUG
+              value: "1"
+            - name: DB_HOST
+              value: postgres
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: addressbook
+            - name: DD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DD_API_KEY
+            - name: DD_APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DD_APP_KEY
