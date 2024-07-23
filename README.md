@@ -4,7 +4,7 @@ This is a very simple web app for testing observability tools. It can be run
 using Docker Compose or Kubernetes. It reads data from a PostgreSQL database
 and displays it in an HTML table
 
-![Screenshot of the address book app](./readme-images/address-book-screenshot.png)
+![Screenshot of the address book app running in Docker Compose](./readme-images/addressbook-screenshot.png)
 
 ## Services
 
