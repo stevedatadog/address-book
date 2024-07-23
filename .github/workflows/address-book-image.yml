@@ -38,10 +38,11 @@ jobs:
         fi
 
     - name: Build and Push Docker Image
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v6
       with:
         context: ./app
         file: ./app/Dockerfile
+        platforms: linux/amd64, linux/arm64, linux/arm64/v8
         push: true
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/address-book

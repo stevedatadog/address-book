@@ -23,7 +23,7 @@ def get_db_connection():
 def index():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM addresses;')
+    cur.execute(f'SELECT * FROM addresses;')
     addresses = cur.fetchall()
     cur.close()
     conn.close()
