@@ -24,17 +24,32 @@ An Nginx server that proxies requests to the Flask app.
 
 ## Configuration
 
+### Docker Compose
+
 Copy the `env-example` file to `.env` and set the values to match your
 environment.
 
-For Kubernetes, you can create ConfigMaps and Secrets from `nginx/nginx.conf`
-and `.env`. In the `deploy/kubernetes` directory:
+### Kubernetes
+
+ConfigMaps for Nginx and PostgreSQL are in the `deploy/kubernetes`
+directory. You can regenerate these configmaps as follows.
+
+Assuming you are in the `deploy/kubernetes` directory:
 
 ```bash
-# app config
-kubectl create configmap app-config --from-env-file=../../.env
-kubectl get configmap app-config -o yaml > app-config.yaml
+# nginx config
+kubectl create configmap nginx-config --from-file=../../nginx/nginx.conf
+kubectl get configmap nginx-config -o yaml > nginx-configmap.yaml
 ```
+
+```bash
+# postgres config
+kubectl create configmap postgres-init-config --from-file=../../postgres/init.sql
+kubectl get configmap postgres-init-config -o yaml > postgres-init-configmap.yaml
+```
+
+To create Kubernetes secrets for the cluster, run the `make-secrets.sh` script.
+This will turn the sensitive contents of `/.env` into Kubernetes secrets.
 
 ## Building
 
@@ -46,7 +61,7 @@ your GitHub Container Registry as
 `ghcr.io/[github-account]/address-book:latest`. You can also run the workflow
 manually to build an image from a branch or tag.
 
-For this to work, make sure that your Actions settings allow read and write permissions for `GITHUB_TOKEN`: 
+For this to work, make sure that your Actions settings allow read and write permissions for `GITHUB_TOKEN`:
 
 1. In your repository, go to the **Settings** tab
 2. Click on **Actions > General**
@@ -64,7 +79,7 @@ as described in the next section.
 
 ## Running
 
-Using either Docker Compose or Kubernetes, the app will be avaialble at
+Using either Docker Compose or Kubernetes, the app will be available at
 `http://localhost:5000`.
 
 ### Docker Compose
@@ -102,5 +117,6 @@ the cluster for pods to pull from. It's easier to build your images using the Gi
 In the `deploy/kubernetes` directory:
 
 ```bash
+./make-secrets.sh
 kubectl apply -f .
 ```
