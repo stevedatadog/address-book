@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
         - name: app
-#          image: registry.default.svc.cluster.local:5000/addressbook:latest # fqdn of local registry
-          image: addressbook:latest
+          image: ghcr.io/stevedatadog/address-book:latest
           ports:
             - containerPort: 5000
           env:

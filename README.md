@@ -1,16 +1,17 @@
 # Address Book
 
 This is a very simple web app for testing observability tools. It can be run
-using Docker Compose or Kubernetes.
+using Docker Compose or Kubernetes. It reads data from a PostgreSQL database
+and displays it in an HTML table
 
-## Tiers
+![Screenshot of the address book app](./readme-images/address-book-screenshot.png)
+
+## Services
 
 ### app
 
 A Python Flask app with one endpoint that queries a PostgreSQL table and renders
 a table of contacts. It uses the `psycopg2` library to connect to the database.
-
-You can use
 
 ### postgres
 
@@ -37,6 +38,8 @@ kubectl get configmap app-config -o yaml > app-config.yaml
 
 ## Building
 
+### GitHub Actions
+
 This repository includes a workflow to build the Python service image
 `ghcr.io/address-book`. Pushes to main will build a new image and store it in
 your GitHub Container Registry as
@@ -53,11 +56,32 @@ For this to work, make sure that your Actions settings allow read and write perm
 
 4. Click **Save**
 
+### Locally
+
+See the `Dockerfile` in the `app` directory for building the `address-book`
+image. If you build the image locally, update the `docker-compose.yml` 
+as described in the next section.
+
 ## Running
+
+Using either Docker Compose or Kubernetes, the app will be avaialble at
+`http://localhost:5000`.
 
 ### Docker Compose
 
+The `docker-compose.yml` file in the `deploy/docker` directory uses latest
+public image in [`stevedatadog/address-book`](https://github.com/stevedatadog/address-book/pkgs/container/address-book). Update the file to use a local image
+if you built it yourself.
+
 In the deploy/docker directory:
+
+#### Using the default public image
+
+```bash
+docker-compose --env-file ../../.env up
+```
+
+#### Using a locally built image
 
 ```bash
 docker-compose --env-file ../../.env up --build
@@ -66,12 +90,16 @@ docker-compose --env-file ../../.env up --build
 If you want to enable debug mode for the Flask app, set the `FLASK_DEBUG`:
 
 ```bash
-docker-compose --env-file ../../.env -e FLASK_DEBUG=1 up --build
+docker-compose --env-file ../../.env -e FLASK_DEBUG=1 up
 ```
 
 ### Kubernetes
 
-In the deploy/kubernetes directory:
+It's hard to run this app in Kubernetes using a local image. You would have
+to add a [Docker registry](https://distribution.github.io/distribution/) to 
+the cluster for pods to pull from. It's easier to build your images using the GitHub workflow.
+
+In the `deploy/kubernetes` directory:
 
 ```bash
 kubectl apply -f .

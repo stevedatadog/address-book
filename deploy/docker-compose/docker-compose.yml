@@ -12,9 +12,14 @@ services:
       - addressnet
 
   app:
-    build: 
-      context: ../../app
-    image: addressbook:latest
+    # If built locally...
+    # build: 
+    #   context: ../../app
+    # image: addressbook:latest
+
+    # If built with GitHub Actions
+    image: ghcr.io/${GHCR_REPOSITORY_NAMESPACE:-stevedatadog}/address-book:latest
+    platform: linux/amd64
     ports:
       - "5000:5000"
     depends_on:

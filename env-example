@@ -1,6 +1,0 @@
-POSTGRES_USER=[user]
-POSTGRES_PASSWORD=[password]
-POSTGRES_DB=addressbook
-FLASK_DEBUG=1
-DD_API_KEY=[dd api key]
-DD_APP_KEY=[dd app key]
