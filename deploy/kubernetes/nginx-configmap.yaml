@@ -19,6 +19,5 @@ kind: ConfigMap
 metadata:
   creationTimestamp: "2024-07-23T02:43:56Z"
   name: nginx-config
-  namespace: default
   resourceVersion: "3082"
   uid: adff9c67-6988-42fa-9f9b-41aba1477385

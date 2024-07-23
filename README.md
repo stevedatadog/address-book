@@ -120,3 +120,102 @@ In the `deploy/kubernetes` directory:
 ./make-secrets.sh
 kubectl apply -f .
 ```
+
+## Instrumenting the App
+
+### Datadog
+
+Follow these steps to instrument the app with Datadog's
+[Single Step Instrumentation](https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/?tab=linuxhostorvm)
+in Kubernetes. Follow the instructions in the documentation for installing Helm
+and the Datadog Operator Helm chart. Then follow these steps:
+
+1. In your `/.env` file, set the `DD_API_KEY` to your Datadog API key.
+1. In the `deploy/kubernetes` directory, create a directory named 
+   `datadog-agent.yaml` with the following contents:
+
+   ```yaml
+   apiVersion: datadoghq.com/v2alpha1
+   kind: DatadogAgent
+   metadata:
+     name: datadog
+   spec:
+     global:
+       clusterName: colima-cluster
+       tags:
+         - env:address-book
+       kubelet:
+         tlsVerify: false
+       credentials:
+         apiSecret:
+           secretName: datadog-secret
+           keyName: api-key
+     features:
+       logCollection:
+         enabled: true
+         containerCollectAll: true
+       apm:
+         instrumentation:
+           enabled: true  
+         hostPortConfig:
+           enabled: true
+       liveProcessCollection:
+         enabled: true
+       usm:
+         enabled: true
+
+1. Create a Kubernetes secret containing your Datadog API key:
+
+   ```bash
+   kubectl create secret -n default generic datadog-secret --from-literal api-key=$DD_API_KEY
+   ```
+
+1. Deploy the Agent:
+
+    ```bash
+    kubectl apply -f datadog-agent.yaml -n default
+    ```
+
+1. Create a namespace for the `address-book` services. (The Datadog Agent will
+   not instrument services in the same namespace as itself.)
+
+    ```bash
+    kubectl create namespace address-book
+    ```
+
+1. Create secrets for `address-book` in the new namespace:
+
+   ```bash
+   kubectl create namespace address-book
+   ./make-secrets.sh -n address-book
+   ```
+
+1. After a minute or two, deploy the `address-book` services, which is every
+   file in the `deploy/kubernetes` directory except for `datadog-agent.yaml`:
+
+    ```bash
+    ls *.yaml \
+      | grep -v -E "datadog-agent.yaml" \
+      | xargs -I {} kubectl apply -n address-book -f {}
+    ```
+
+1. In Datadog, visit the [Kubernetes Overview](https://app.datadoghq.com/kubernetes?homepage_tags=kube_namespace%3Aaddress-book)
+   for the `address-book` namespace.
+
+1. Wait until **Pods** displays `3`, and then click **Pods**.
+
+1. Click the `app` pod to open its details panel. In the **Containers**
+   table, you should see a few **TERMINATED** containers that injected trace
+   libraries into the `app` pod, each labeled with **INIT**:
+
+   ![Terminated library injection containers in the app pod details panel](readme-images/trace-injection-containers.png)
+
+1. Open the `address-book` app in your browser at `localhost:80`. You should
+   see the app's home page with a table of contacts. Refresh this a few times
+   to generate some traces.
+
+1. In Datadog, navigate to [**APM > Traces**](https://app.datadoghq.com/apm/traces?query=env%3Aaddress-book).
+
+   You should see tracer for the requests that the app has handled:
+
+   ![Traces from the address-book app](readme-images/address-book-traces.png)

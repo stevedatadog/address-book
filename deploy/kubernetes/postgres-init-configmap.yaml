@@ -44,6 +44,5 @@ kind: ConfigMap
 metadata:
   creationTimestamp: "2024-07-23T02:52:23Z"
   name: postgres-init-config
-  namespace: default
   resourceVersion: "3241"
   uid: 4b02e2f5-af1a-43f1-8a82-734c523c11d2
